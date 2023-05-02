@@ -12,6 +12,7 @@ import os
 import sys
 import random
 import argparse
+import numpy as np
 
 #==============================================================================
 parser = argparse.ArgumentParser(description='This tool use random number reusability for sequentially searching all unsolved BTC puzzles', 
@@ -68,9 +69,9 @@ while True:
             if ice.pubkey_to_h160(0, True, P) in puzz_h160: 
                 print_success(bitkey)
                 
-            Pv = ice.point_sequential_increment(seq, P)
-            for t in range(seq):
-                curr160 = ice.pubkey_to_h160(0, True, Pv[t*65:t*65+65])
+            data = np.frombuffer(ice.point_sequential_increment(seq, P), np.uint8).reshape(seq, 65)
+            for t in data:
+                curr160 = ice.pubkey_to_h160(0, True, t.tobytes())
                 if curr160 in puzz_h160:
                     print_success(bitkey + t + 1)
             elapsed = time.time() - start
