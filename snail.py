@@ -70,10 +70,12 @@ while True:
                 print_success(bitkey)
                 
             data = np.frombuffer(ice.point_sequential_increment(seq, P), np.uint8).reshape(seq, 65)
+            cnt = 0
             for t in data:
                 curr160 = ice.pubkey_to_h160(0, True, t.tobytes())
                 if curr160 in puzz_h160:
-                    print_success(bitkey + t + 1)
+                    print_success(bitkey + cnt + 1)
+                cnt += 1
             elapsed = time.time() - start
             speed = ( (loop-1)*(seq+1)*len(puzz_bits) + (seq+1)*counter ) / elapsed
             print(' '*120,end='\r')
