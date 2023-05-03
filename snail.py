@@ -32,7 +32,7 @@ if os.path.isfile(p_file) == False:
     sys.exit()
 puzz = {int(line.split()[0]):line.split()[1] for line in open(p_file,'r')}
 puzz_bits = list(puzz.keys())
-puzz_h160 = [ice.address_to_h160(line) for line in puzz.values()]
+puzz_h160 = [bytes.fromhex(ice.address_to_h160(line)) for line in puzz.values()]
 #==============================================================================
 
 # Very Very Slow. Made only to get a random number completely non pseudo stl.
@@ -44,22 +44,23 @@ def randk(bits):
     return random.SystemRandom().randint(2**(bits-1), -1+2**bits)
 
 def print_success(my_key):
-    print('============== KEYFOUND ==============')
+    print('\n============== KEYFOUND ==============')
     print(f'Puzzle FOUND PrivateKey: {hex(my_key)}   Address: {ice.privatekey_to_address(0, True, my_key)}')
     print('======================================')
     with open('KEYFOUNDKEYFOUND.txt','a') as fw:
         fw.write('Puzzle_FOUND_PrivateKey '+hex(my_key)+'\n')
+    exit()
 #==============================================================================
 
 print('\n[+] Starting Program.... Please Wait !')
 print(f'[+] Search Mode: Sequential Random in each Loop. seq={seq}')
 print(f'[+] Total Unsolved: {len(puzz_bits)} Puzzles in the bit range [{min(puzz_bits)}-{max(puzz_bits)}]')
 
-key_int = randk(160)
 loop = 0
 start = time.time()
 while True:
     try:
+        key_int = randk(160)
         loop += 1
         counter = 0
         for cbits in puzz_bits:
@@ -75,6 +76,7 @@ while True:
                 curr160 = ice.pubkey_to_h160(0, True, t.tobytes())
                 if curr160 in puzz_h160:
                     print_success(bitkey + cnt + 1)
+
                 cnt += 1
             elapsed = time.time() - start
             speed = ( (loop-1)*(seq+1)*len(puzz_bits) + (seq+1)*counter ) / elapsed
@@ -82,4 +84,3 @@ while True:
             print(f'[Loop: {loop}] [Puzzle: {cbits} bit] [Speed: {speed:.2f} K/s] [{dt.strftime(dt.utcfromtimestamp(elapsed), "%H:%M:%S")}] [{hex(bitkey)}]', end='\r')
     except(KeyboardInterrupt, SystemExit):
         exit('\nSIGINT or CTRL-C detected. Exiting gracefully. BYE')
-        
