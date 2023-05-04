@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Usage :
- > python snail.py -n 1200000
+ > python snailpub.py
  
 @author: iceland
 """
@@ -18,13 +18,13 @@ import numpy as np
 parser = argparse.ArgumentParser(description='This tool use random number reusability for sequentially searching all unsolved BTC puzzles', 
                                  epilog='Enjoy the program! :)    Tips BTC: bc1q39meky2mn5qjq704zz0nnkl0v7kj4uz6r529at')
 parser.version = '02052023'
-parser.add_argument("-p", help = "Unsolved Puzzles file. default=unsolved.pub", action="store")
-parser.add_argument("-n", help = "Total sequential search in 1 loop. default=1000000", action='store')
+parser.add_argument("-p", help = "Unsolved Puzzles file with pubkey. default=unsolved.pub", action="store")
+parser.add_argument("-n", help = "Total sequential search in 1 loop. default=4000000", action='store')
 
 args = parser.parse_args()
 #==============================================================================
 
-seq = int(args.n) if args.n else 1000000  # 1 Million
+seq = int(args.n) if args.n else 4000000  # 4 Million
 p_file = args.p if args.p else 'unsolved.pub'  # 'unsolved.pub'
 
 if os.path.isfile(p_file) == False:
