@@ -7,12 +7,10 @@ Usage :
 """
 import secp256k1 as ice
 import time
-from datetime import datetime as dt
 import os
 import sys
 import random
 import argparse
-import numpy as np
 
 #==============================================================================
 parser = argparse.ArgumentParser(description='This tool use random number reusability for sequentially searching all unsolved BTC puzzles', 
@@ -37,10 +35,6 @@ puzz_h160 = [bytes.fromhex(ice.address_to_h160(line)) for line in puzz.values()]
 
 # Very Very Slow. Made only to get a random number completely non pseudo stl.
 def randk(bits):
-    dd = list(str(random.randint(1,2**256)))
-    random.shuffle(dd); random.shuffle(dd)
-    rs = int(''.join(dd))
-    random.seed(rs)
     return random.SystemRandom().randint(2**(bits-1), -1+2**bits)
 
 def print_success(my_key):
@@ -50,6 +44,16 @@ def print_success(my_key):
     with open('KEYFOUNDKEYFOUND.txt','a') as fw:
         fw.write('Puzzle_FOUND_PrivateKey '+hex(my_key)+'\n')
     exit()
+    
+def chunks(s):
+    for start in range(0, 65*seq, 65):
+        yield s[start : start + 65]
+
+def display_time(seconds):
+    hours, rem = divmod(seconds, 3600)
+    minutes, seconds = divmod(rem, 60)
+    return f"{int(hours):02d}:{int(minutes):02d}:{seconds:05.2f}"
+    
 #==============================================================================
 
 print('\n[+] Starting Program.... Please Wait !')
@@ -70,10 +74,9 @@ while True:
             if ice.pubkey_to_h160(0, True, P) in puzz_h160: 
                 print_success(bitkey)
                 
-            data = np.frombuffer(ice.point_sequential_increment(seq, P), np.uint8).reshape(seq, 65)
             cnt = 0
-            for t in data:
-                curr160 = ice.pubkey_to_h160(0, True, t.tobytes())
+            for t in chunks(ice.point_sequential_increment(seq, P)):
+                curr160 = ice.pubkey_to_h160(0, True, t)
                 if curr160 in puzz_h160:
                     print_success(bitkey + cnt + 1)
 
@@ -81,6 +84,6 @@ while True:
             elapsed = time.time() - start
             speed = ( (loop-1)*(seq+1)*len(puzz_bits) + (seq+1)*counter ) / elapsed
             print(' '*120,end='\r')
-            print(f'[Loop: {loop}] [Puzzle: {cbits} bit] [Speed: {speed:.2f} K/s] [{dt.strftime(dt.utcfromtimestamp(elapsed), "%H:%M:%S")}] [{hex(bitkey)}]', end='\r')
+            print(f'[Loop: {loop}] [Puzzle: {cbits} bit] [Speed: {speed:.2f} K/s] [{display_time(elapsed)}] [{hex(bitkey)}]', end='\r')
     except(KeyboardInterrupt, SystemExit):
         exit('\nSIGINT or CTRL-C detected. Exiting gracefully. BYE')
